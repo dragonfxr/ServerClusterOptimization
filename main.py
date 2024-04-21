@@ -14,6 +14,8 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 
+np.random.seed(4)
+
 class job:
     def __init__(self, arrivalTime, serviceTime, group, index):
         self.arrivalTime = arrivalTime
@@ -63,9 +65,9 @@ def mrt(jobs):
 
     return response_times
 
-def output(s, completed_jobs, response_times):
+def output(s, completed_jobs):
     with open(f"output/mrt_{s}.txt", "w") as mrt_file:
-                mrt_file.write(f"{mrt(completed_jobs)["0"]} "+ f"{mrt(completed_jobs)["1"]}")
+                mrt_file.write(f"{mrt(completed_jobs)['0']} "+ f"{mrt(completed_jobs)['1']}")
 
     # Save dep values to a file
     with open(f"output/dep_{s}.txt", "w") as dep_file:
@@ -75,7 +77,7 @@ def output(s, completed_jobs, response_times):
 def generate_groups(p0, n):
     jobsGroup = []
     for _ in range(n):
-        random_number = random.random()
+        random_number = np.random.random()
         if random_number < p0:
             jobsGroup.append("0")
         else:
@@ -172,7 +174,6 @@ def main(s):
     queue1 = []
 
     completed_jobs = []
-    response_times = {"0":0,"1":0}
 
     jobList = get_all_jobs(mode, interArrivalFile, serviceFile, paraFile)
     
@@ -180,10 +181,10 @@ def main(s):
         currentJob = jobList.pop(0)
         masterclock = currentJob.eventTime
         if currentJob.type == "Arrival":
-            log(currentJob, masterclock)
+            # log(currentJob, masterclock)
             if currentJob.group == "0":
                 if group0 != n0:
-                    print("Group 0 has a space.")
+                    # print("Group 0 has a space.")
                     group0 += 1
                     if currentJob.serviceTime > Tlimit:
                         currentJob.departureTime = masterclock + Tlimit
@@ -191,34 +192,34 @@ def main(s):
                         currentJob.group = "R"
                         currentJob.type = "Departure"
                         add_to_jobs(jobList, currentJob)
-                        print("Job", f"{currentJob.index}", "cannot finish, need to go to group1 later.")
+                        # print("Job", f"{currentJob.index}", "cannot finish, need to go to group1 later.")
                     else:
                         currentJob.departureTime = masterclock + currentJob.serviceTime
                         currentJob.eventTime = currentJob.departureTime
                         currentJob.type = "Departure"
                         add_to_jobs(jobList,currentJob)
-                        print("Job", f"{currentJob.index}", "will finish at", f"{currentJob.departureTime}")
+                        # print("Job", f"{currentJob.index}", "will finish at", f"{currentJob.departureTime}")
                 else:
-                    print("Group 0 is full")
+                    # print("Group 0 is full")
                     queue0.append(currentJob)
-                    print("Job",f"{currentJob.index}","to queue0: ", currentJob.eventTime)
+                    # print("Job",f"{currentJob.index}","to queue0: ", currentJob.eventTime)
             elif currentJob.group == "1" or currentJob.group == "r0":
                 if group1 != n-n0:
-                    print("Group 1 has a space")
+                    # print("Group 1 has a space")
                     group1 += 1
                     currentJob.departureTime = masterclock + currentJob.serviceTime
                     currentJob.eventTime = currentJob.departureTime
                     currentJob.type = "Departure"
                     add_to_jobs(jobList, currentJob)
-                    print("Job", f"{currentJob.index}", "will finish at", f"{currentJob.departureTime}")
+                    # print("Job", f"{currentJob.index}", "will finish at", f"{currentJob.departureTime}")
                 else:
-                    print("Group 1 is full")
+                    # print("Group 1 is full")
                     queue1.append(currentJob)
-                    print("Job",f"{currentJob.index}","to queue1: ", currentJob.eventTime)
+                    # print("Job",f"{currentJob.index}","to queue1: ", currentJob.eventTime)
         elif currentJob.type ==  "Departure":
-            log(currentJob, masterclock)
+            # log(currentJob, masterclock)
             if currentJob.group == "0":
-                print("Job", f"{currentJob.index}", "finished.")
+                # print("Job", f"{currentJob.index}", "finished.")
                 completed_jobs.append((currentJob.arrivalTime, masterclock, currentJob.group))
                 if queue0:
                     queue_to_server(queue0, jobList, masterclock)
@@ -229,20 +230,20 @@ def main(s):
                 currentJob.eventTime = masterclock
                 currentJob.group = "r0"
                 add_to_jobs(jobList, currentJob)
-                print("Job", f"{currentJob.index}", "has moved to group 1")
+                # print("Job", f"{currentJob.index}", "has moved to group 1")
                 if queue0:
                     queue_to_server(queue0, jobList, masterclock)
                 group0 -= 1
             else:
-                print("Job", f"{currentJob.index}", "finished.")
+                # print("Job", f"{currentJob.index}", "finished.")
                 completed_jobs.append((currentJob.arrivalTime, masterclock, currentJob.group))
                 if queue1:
                     queue_to_server(queue1, jobList, masterclock)
                 group1 -= 1
-        print("-----------------------------")
+        # print("-----------------------------")
     # print(completed_jobs)
-    print(mrt(completed_jobs)["0"], mrt(completed_jobs)["1"])
-    output(s, completed_jobs, response_times) 
+    # print(mrt(completed_jobs)["0"], mrt(completed_jobs)["1"])
+    output(s, completed_jobs) 
   
 if __name__ == "__main__":
    main(sys.argv[1])
